@@ -9,6 +9,7 @@ import (
 	"github.com/satyrius/gonx"
 	"gopkg.in/redis.v2"
 	"strconv"
+	"os"
 )
 
 func main() {
@@ -23,14 +24,26 @@ func main() {
 	}
 }
 
+// copied from github.com/deis
+func getopt(name, dfault string) string {
+	value := os.Getenv(name)
+	if value == "" {
+		value = dfault
+	}
+	return value
+}
+
 func ticker() {
 
 	ticker := time.NewTicker(time.Second * 5)
 	go func() {
+
+		redisServer := getopt("REDIS_SERVER", "127.0.0.1:6379")
+
 		for t := range ticker.C {
 			fmt.Println("Tick at", t)
 
-			client := redis.NewClient(&redis.Options{Network: "tcp", Addr: "127.0.0.1:6379"})
+			client := redis.NewClient(&redis.Options{Network: "tcp", Addr: redisServer})
 			incr := func(tx *redis.Multi) ([]redis.Cmder, error) {
 
 				return tx.Exec(func() error {
@@ -103,7 +116,9 @@ func readlog() {
 	format  := `$deis_time $deis_unit: [$level] - [$time_local] - $remote_addr - $remote_user - $status - "$request" - $bytes_sent - "$http_referer" - "$http_user_agent" - "$server_name" - $upstream_addr`
 
 	// redis
-        rc := redis.NewClient(&redis.Options{Network: "tcp", Addr: "127.0.0.1:6379"})
+
+	redisServer := getopt("REDIS_SERVER", "127.0.0.1:6379")
+        rc := redis.NewClient(&redis.Options{Network: "tcp", Addr: redisServer})
 
 	// tail 
 	location := tail.SeekInfo{Offset: 0, Whence: 2}
