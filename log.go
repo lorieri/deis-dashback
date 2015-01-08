@@ -120,9 +120,11 @@ func readlog() {
 	redisServer := getopt("REDIS_SERVER", "127.0.0.1:6379")
         rc := redis.NewClient(&redis.Options{Network: "tcp", Addr: redisServer})
 
+
+	logFile := getopt("LOG_FILE", "/var/lib/deis/store/logs/deis-router.log")
 	// tail 
 	location := tail.SeekInfo{Offset: 0, Whence: 2}
-	t, err := tail.TailFile("/var/log/nginx.log", tail.Config{Follow: true, ReOpen: true, Location: &location })
+	t, err := tail.TailFile(logFile, tail.Config{Follow: true, ReOpen: true, Location: &location })
 	for line := range t.Lines {
 		// fmt.Println(line.Text)
 
