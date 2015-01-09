@@ -8,4 +8,6 @@ RUN cd / && find redis-2.8.19 -executable -type f -exec mv {} /bin/ \; && rm -rf
 
 ADD . /
 
+RUN go build log.go
+
 ENTRYPOINT ["/boot.sh"]

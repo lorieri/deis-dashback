@@ -4,6 +4,6 @@
 
 while true
 do
-	go run log.go
+	/log.go
 	sleep 1
 done
