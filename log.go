@@ -85,6 +85,10 @@ func ticker() {
 							tx.Eval(incrbycmd, []string{"union"+k}, []string{"last5"+k})
 							tx.Eval(incrbycmd, []string{"union"+k}, []string{"last10"+k})
 						}
+
+						if strings.HasPrefix(k, "_s") {
+							tx.Rename("last5"+k, "union"+k)
+						}
 					}
 
 					return nil
@@ -140,13 +144,12 @@ func readlog() {
 				panic(err)
 			}
 			upstream_addr, _ := rec.Field("upstream_addr")
-			//remote_addr, _ := rec.Field("remote_addr")
+			remote_addr, _ := rec.Field("remote_addr")
+			time_local, _ := rec.Field("time_local")
 			status, _ := rec.Field("status")
 			bytes_sent_str, _ := rec.Field("bytes_sent")
-			bytes_sent, errleo := strconv.ParseInt(bytes_sent_str, 0, 64)
-			if errleo != nil {
-				fmt.Printf("%+v\n",errleo)
-			}
+			bytes_sent, _ := strconv.ParseInt(bytes_sent_str, 0, 64)
+			bytes_sent_float,_ := strconv.ParseFloat(bytes_sent_str,64)
 			// fmt.Printf("%+v\n",bytes_sent)
 			http_referer, _ := rec.Field("http_referer")
 			request, _ := rec.Field("request")
@@ -163,8 +166,13 @@ func readlog() {
 				rc.ZIncrBy("current_z_top_error_app_status",1,server_name+"_"+status)
 				rc.IncrBy("current_k_total_errors", 1)
 			}
+			rc.ZIncrBy("current_z_top_remote_addr_status", 1, status+" "+remote_addr)
+			rc.ZIncrBy("current_z_top_remote_addr_bytes_sent", bytes_sent_float, remote_addr)
+			rc.ZIncrBy("current_z_top_apps_bytes_sent", bytes_sent_float, server_name)
 			rc.IncrBy("current_k_total_bytes", bytes_sent)
 			rc.IncrBy("current_k_total_requests", 1)
+			rc.Set("current_s_last_log_time", time_local)
+
 
 
 			// apps
@@ -175,10 +183,13 @@ func readlog() {
 			if !strings.HasPrefix(status, "2") && !strings.HasPrefix(status, "3"){
 				rc.ZIncrBy("current_z_top_app_error_referer_"+server_name, 1 , status+" "+http_referer)
 				rc.ZIncrBy("current_z_top_app_error_request_"+server_name, 1 , status+" "+request)
+				rc.ZIncrBy("current_z_top_app_error_remote_addr_"+server_name, 1, status+" "+remote_addr)
 				rc.IncrBy("current_k_total_app_errors_"+server_name, 1)
 			}
+			rc.ZIncrBy("current_z_top_remote_addr_status_"+server_name, 1, status+" "+remote_addr)
+			rc.ZIncrBy("current_z_top_remote_addr_bytes_sent_"+server_name, bytes_sent_float, remote_addr)
 			rc.ZIncrBy("current_z_top_app_referer_"+server_name, 1, http_referer)
-			//rc.IncrBy("current_k_total_app_bytes"+server_name, bytes_sent)
+			rc.IncrBy("current_k_total_app_bytes_sent_"+server_name, bytes_sent)
 			rc.IncrBy("current_k_total_app_requests_"+server_name, 1)
 
 		}
