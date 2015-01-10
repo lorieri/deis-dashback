@@ -155,8 +155,12 @@ func readlog() {
 			request, _ := rec.Field("request")
 			// fmt.Printf("%q\n", strings.Split("a,b,c", ",")[0])
 			server_name, _ := rec.Field("server_name")
-			server_name = strings.Split(server_name, "^")[1]
-			server_name = strings.Split(server_name, `\`)[0]
+			if strings.Contains(server_name, "^") {
+				server_name = strings.Split(server_name, "^")[1]
+				server_name = strings.Split(server_name, `\`)[0]
+			}else{
+				server_name = "UNKNOWN"
+			}
 			// ZIncrBy(key string, increment int, member string)
 
 			// global
