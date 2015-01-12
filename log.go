@@ -126,6 +126,7 @@ func readlog() {
 
 
 	logFile := getopt("LOG_FILE", "/var/lib/deis/store/logs/deis-router.log")
+	fmt.Println("Set logFile as "+logFile)
 	// tail 
 	location := tail.SeekInfo{Offset: 0, Whence: 2}
 	t, err := tail.TailFile(logFile, tail.Config{Follow: true, ReOpen: true, Location: &location })
