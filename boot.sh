@@ -1,4 +1,4 @@
 #!/bin/bash
 
 /bin/redis-server &
-/log
+/back
