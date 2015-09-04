@@ -1,4 +1,4 @@
 #!/bin/bash
 
-/bin/redis-server &
+/bin/redis-server --save "" --maxmemory-policy allkeys-lru &
 /back

@@ -110,7 +110,7 @@ func ticker() {
 			    break
 			}
 
-
+			client.Close()
 		}
 	}()
 }
